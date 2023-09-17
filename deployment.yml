@@ -1,0 +1,40 @@
+apiVersion: apps/v1 
+kind: Deployment 
+metadata: 
+  name: supermarket
+spec: 
+  replicas: 1 
+  selector: 
+    matchLabels: 
+      app: supermarket
+  template: 
+    metadata: 
+      labels: 
+        app: supermarket  
+    spec: 
+      containers: 
+        - name: supermarket
+          image: supermarket
+          imagePullPolicy: Never 
+          ports:
+            - containerPort: 5000
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: supermarket
+spec:
+  type: LoadBalancer
+  selector:
+    app: supermarket
+  ports:
+    - name: http
+      protocol: TCP
+      port: 5000
+      targetPort: 5000
+    - name: https
+      protocol: TCP
+      port: 443
+      targetPort: 443
+ 
