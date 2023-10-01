@@ -6,11 +6,12 @@ import psycopg2
 class DBHandler:
 
     def __init__(self):
-        self.connection = self._connect()
-        # cursor = self.connection.cursor() rendere campo della classe
+        self._connection = self._connect()
+        self._cursor = self._connection.cursor()
 
     def __del__(self): # distruttore
-        self.connection.close()
+        self._cursor.close()
+        self._connection.close()
 
     def _connect(self):
         newConn = psycopg2.connect(
@@ -24,18 +25,19 @@ class DBHandler:
         return newConn
 
     def select(self, query):
-        cursor = self.connection.cursor()
-        cursor.execute(query)
-        columns = [desc[0] for desc in cursor.description]
-        result = [dict(zip(columns, row)) for row in cursor.fetchall()] # lista di dizionari
+        self._cursor.execute(query)
+        columns = [desc[0] for desc in self._cursor.description]
+        result = [dict(zip(columns, row)) for row in self._cursor.fetchall()] # lista di dizionari
         return result
 
-    def update(self, query):
+    def update(self, query, autocommit = True):
         print("Eseguo: ", query)
-        cursor = self.connection.cursor()
-        result = cursor.execute(query)
-        self.connection.commit()
+        result = self._cursor.execute(query)
+        if autocommit: self._connection.commit()
         return result
+
+    def commit(self):
+        self._connection.commit()
 
 
 # metodo main per test della classe

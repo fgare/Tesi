@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class OrderState(Enum):
     CREATED = 0
     PAID = 1

@@ -1,7 +1,5 @@
-import json
-
-from DBHandler import DBHandler
-from Globals import GlobalConstants
+from MonolithicApp.Globals.DBHandler import DBHandler
+from MonolithicApp.Globals import GlobalConstants
 
 
 class WarehouseManager:

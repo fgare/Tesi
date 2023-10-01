@@ -1,5 +1,6 @@
 from flask import Flask, request
-from WarehouseManager import WarehouseManager
+from MonolithicApp.Warehouse.WarehouseManager import WarehouseManager
+from MonolithicApp.Orders.OrdersManager import OrdersManager
 from psycopg2 import DatabaseError
 from flask_restful import Api, Resource
 
@@ -26,6 +27,20 @@ def productList():
                 return "Inserito"
             else:
                 return "Error - can't find Json file"
+        except DatabaseError as e:
+            print(e.args[0])
+            return "Database error."
+
+
+@app.route("/newOrder", methods=["POST"])
+def newOrder():
+    if request.method == "POST":
+        print("Ordine inviato:\n", request.data.decode())
+        try:
+            if request.is_json:
+                OrdersManager().newOrder(request.get_json())
+            else:
+                return "No json provided"
         except DatabaseError as e:
             print(e.args[0])
             return "Database error."
