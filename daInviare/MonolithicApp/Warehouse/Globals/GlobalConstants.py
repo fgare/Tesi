@@ -1,4 +1,0 @@
-ARTICLES_DBTABLE = "articles"
-CUSTOMERS_DBTABLE = "customers"
-ORDERITEMS_DBTABLE = "orderitems"
-ORDERS_DBTABLE = "orders"

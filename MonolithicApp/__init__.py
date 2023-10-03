@@ -1,6 +1,7 @@
 from flask import Flask, request
 from MonolithicApp.Warehouse.WarehouseManager import WarehouseManager
 from MonolithicApp.Orders.OrdersManager import OrdersManager
+from MonolithicApp.Customers.CustomersManager import CustomersManager
 from psycopg2 import DatabaseError
 from flask_restful import Api, Resource
 
@@ -44,6 +45,25 @@ def newOrder():
         except DatabaseError as e:
             print(e.args[0])
             return "Database error."
+
+
+@app.route("/registerCustomer", methods=["POST"])
+def registerCustomer():
+    if request.method == "POST":
+        print("Registrazione nuovo cliente >\n", request.data.decode())
+        try:
+            if request.is_json:
+                CustomersManager().addNewCustomer(request.get_json())
+                return "Customer added"
+            else:
+                return "No json provided"
+        except DatabaseError as e:
+            print(e.args[0])
+            return "Database error"
+
+@app.route("/login", methods=["POST"])
+def customerLogin():
+    pass
 
 
 if __name__ == "__main__":

@@ -13,18 +13,20 @@ class OrdersManager:
         # creazione del nuovo ordine
         now = datetime.datetime.now()
         badge = jsonOrder["badge_n"]
-        createOrder_query = f"INSERT INTO {GlobalConstants.ORDERS_DBTABLE}('badge_n', 'orderdate', 'total_price') " \
-                            f"VALUES(badge, now, null)" \
+        print("Badge_n = ", badge)
+        createOrder_query = f"INSERT INTO {GlobalConstants.ORDERS_DBTABLE}(badge_n, orderdate) " \
+                            f"VALUES({badge}, '{now}') " \
                             f"RETURNING orderid;"
         orderID = self.db.update(createOrder_query, False)
+        print("Order ID = ", orderID)
 
         # aggiornamento quantità
         items = jsonOrder["items"]
         updateQuantities_query = ""
         for element in items:
             updateQuantities_query += f"UPDATE {GlobalConstants.ARTICLES_DBTABLE} " \
-                                f"SET quantity = quantity - {element['quantity']} " \
-                                f"WHERE barcode = {element['barcode']};\n"
+                                    f"SET quantity = quantity - {element['quantity']} " \
+                                    f"WHERE barcode = {element['barcode']};\n"
         self.db.update(updateQuantities_query, False)
 
         # memorizza prodotti nell'ordine
