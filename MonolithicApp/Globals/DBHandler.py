@@ -25,16 +25,30 @@ class DBHandler:
         return newConn
 
     def select(self, query):
-        self._cursor.execute(query)
-        columns = [desc[0] for desc in self._cursor.description]
-        result = [dict(zip(columns, row)) for row in self._cursor.fetchall()] # lista di dizionari
-        return result
-
-    def update(self, query, autocommit = True):
         print("Eseguo: ", query)
-        result = self._cursor.execute(query)
-        if autocommit: self._connection.commit()
-        return result
+        try:
+            self._cursor.execute(query)
+            columns = [desc[0] for desc in self._cursor.description]
+            result = [dict(zip(columns, row)) for row in self._cursor.fetchall()] # lista di dizionari
+            return result
+        except psycopg2.Error as e:
+            self._connection.rollback()
+            print("Eseguo rollback")
+            raise e
+
+    def update(self, query, response=False):
+        print("Eseguo: ", query)
+        try:
+            self._cursor.execute(query)
+            self._connection.commit()
+            if response:
+                return self._cursor.fetchall()
+            else:
+                return None
+        except psycopg2.Error as e:
+            print("Eseguo rollback")
+            self._connection.rollback()
+            raise e
 
     def commit(self):
         self._connection.commit()

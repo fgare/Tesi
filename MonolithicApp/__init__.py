@@ -2,7 +2,10 @@ from flask import Flask, request
 from MonolithicApp.Warehouse.WarehouseManager import WarehouseManager
 from MonolithicApp.Orders.OrdersManager import OrdersManager
 from MonolithicApp.Customers.CustomersManager import CustomersManager
+from MonolithicApp.Payments.PaymentsManager import PaymentsManager
+from MonolithicApp.Authentication.AuthenticationManager import AuthenticationManager
 from psycopg2 import DatabaseError
+import json
 from flask_restful import Api, Resource
 
 app = Flask(__name__)
@@ -31,6 +34,10 @@ def productList():
         except DatabaseError as e:
             print(e.args[0])
             return "Database error."
+    else:
+        return json.dumps({
+            "comment": f"Method {request.method} not supported"
+        })
 
 
 @app.route("/newOrder", methods=["POST"])
@@ -39,12 +46,15 @@ def newOrder():
         print("Ordine inviato:\n", request.data.decode())
         try:
             if request.is_json:
-                OrdersManager().newOrder(request.get_json())
+                response = OrdersManager().newOrder(request.get_json())
+                return json.dumps(response)
             else:
-                return "No json provided"
+                return json.dumps({"comment": "No json provided"})
         except DatabaseError as e:
             print(e.args[0])
-            return "Database error."
+            return json.dumps({"comment": "Database error"})
+    else:
+        return json.dumps({"comment": f"Method {request.method} not supported"})
 
 
 @app.route("/registerCustomer", methods=["POST"])
@@ -54,16 +64,39 @@ def registerCustomer():
         try:
             if request.is_json:
                 CustomersManager().addNewCustomer(request.get_json())
-                return "Customer added"
+                return json.dumps({"comment": "Customer added"})
             else:
-                return "No json provided"
+                return json.dumps({"comment": "No json provided"})
         except DatabaseError as e:
             print(e.args[0])
-            return "Database error"
+            return json.dumps({"comment": "Database error"})
+    else:
+        json.dumps({"comment": f"Method {request.method} not supported"})
+
 
 @app.route("/login", methods=["POST"])
 def customerLogin():
-    pass
+    if request.method == "POST":
+        print("Sent request:\n", request.data.decode())
+        if request.is_json:
+            response = AuthenticationManager().authenticateUser(request.get_json())
+            return json.dumps(response)
+        else:
+            return json.dumps({"comment": "No json provided"})
+    else:
+        return json.dumps({"comment": "No json provided"})
+
+@app.route("/payOrder", methods=["POST"])
+def payOrder():
+    if request.method == "POST":
+        print("Incoming order summary:\n", request.data.decode())
+        if request.is_json:
+            response = PaymentsManager().pay(request.get_json())
+            return json.dumps(response)
+        else:
+            return json.dumps({"comment": "No json provided"})
+    else:
+        json.dumps({"comment": f"Method {request.method} not supported"})
 
 
 if __name__ == "__main__":
