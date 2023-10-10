@@ -32,8 +32,6 @@ class DBHandler:
             result = [dict(zip(columns, row)) for row in self._cursor.fetchall()] # lista di dizionari
             return result
         except psycopg2.Error as e:
-            self._connection.rollback()
-            print("Eseguo rollback")
             raise e
 
     def update(self, query, response=False):

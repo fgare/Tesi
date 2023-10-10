@@ -1,5 +1,8 @@
+import random
+
 import psycopg2
 import time
+import random
 
 from MonolithicApp.Globals.DBHandler import DBHandler
 from MonolithicApp.Globals import GlobalConstants
@@ -30,7 +33,22 @@ class PaymentsManager:
 
         time.sleep(0.1)  # thread dorme per 100 ms, simula pagamento
 
-        # aggiorna lo stato dell'ordine
+        # Nel 10% dei casi il pagamento viene rifiutato
+        if random.random() < 0.1:
+            updateOrderState_query = f"UPDATE {GlobalConstants.ORDERS_DBTABLE} " \
+                                     f"SET orderstate = '{OrderState.REFUSED.name}' " \
+                                     f"WHERE orderid = {orderID};"
+            self.db.update(updateOrderState_query)
+            print(f"Order ID={orderID} has been refused")
+
+            return {
+                "comment": f"Your order has been refused",
+                "orderID": orderID,
+                "orderState": OrderState.REFUSED.name,
+                "price": None
+            }
+
+        # pagamento accettato
         updateOrderState_query = f"UPDATE {GlobalConstants.ORDERS_DBTABLE} " \
                                  f"SET orderstate = '{OrderState.PAID.name}' " \
                                  f"WHERE orderid = {orderID};"

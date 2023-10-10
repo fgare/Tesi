@@ -4,6 +4,7 @@ from MonolithicApp.Orders.OrdersManager import OrdersManager
 from MonolithicApp.Customers.CustomersManager import CustomersManager
 from MonolithicApp.Payments.PaymentsManager import PaymentsManager
 from MonolithicApp.Authentication.AuthenticationManager import AuthenticationManager
+from MonolithicApp.Shippings.ShippingManager import ShippingsManager
 from psycopg2 import DatabaseError
 import json
 from flask_restful import Api, Resource
@@ -16,28 +17,22 @@ def productList():
     if request.method == "GET":
         try:
             return WarehouseManager().getProductsList()
-            # return "Ci sei riuscito!"
         except DatabaseError as e:
             print(e.args[0])
-            return "Database error."
+            return json.dumps({"comment": "Database error"})
     elif request.method == "POST":
         print("Richiesta > ", request.data.decode())
         try:
             if request.is_json:
-                # print(request.get_json())
-                # print("Tipo > ", type(request.get_json()))
-                # print("Headers > ", request.headers)
                 WarehouseManager().addProduct(request.get_json())
-                return "Inserito"
+                return json.dumps({"comment": "Product inserted"})
             else:
-                return "Error - can't find Json file"
+                return json.dumps({"comment": "Error - can't find json file"})
         except DatabaseError as e:
             print(e.args[0])
-            return "Database error."
+            return json.dumps({"comment": "Database error"})
     else:
-        return json.dumps({
-            "comment": f"Method {request.method} not supported"
-        })
+        return json.dumps({"comment": f"Method {request.method} not supported"})
 
 
 @app.route("/newOrder", methods=["POST"])
@@ -86,6 +81,7 @@ def customerLogin():
     else:
         return json.dumps({"comment": "No json provided"})
 
+
 @app.route("/payOrder", methods=["POST"])
 def payOrder():
     if request.method == "POST":
@@ -97,6 +93,14 @@ def payOrder():
             return json.dumps({"comment": "No json provided"})
     else:
         json.dumps({"comment": f"Method {request.method} not supported"})
+
+
+@app.route("/trackOrder", methods=["GET"])
+def trackOrder():
+    if request.method == "GET":
+        trackingID = int(request.args.get('id'))
+        print("Tracking ID = ", trackingID)
+        return json.dumps(ShippingsManager().trackOrder(trackingID))
 
 
 if __name__ == "__main__":
