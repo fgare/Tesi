@@ -6,12 +6,12 @@ app = Flask(__name__)
 @app.route("/productsList", methods=["GET","POST"])
 def productList():
     if request.method == "GET":
-        return "Ci sei riuscito!"
+        return "Elenco prodotti"
     elif request.method == "POST":
         if request.is_json:
-            return "x"
+            return "json"
         else:
-            return "xx"
+            return "no json"
 
 
 if __name__ == "__main__":

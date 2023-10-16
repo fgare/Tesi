@@ -16,7 +16,6 @@ if __name__ == "__main__":
         products = json.loads(products.json())
         # print("Products >\n", products.json())
         print(f"product = ", products[0])
-        break
         shoppingCartDimension = random.randint(5, 200)  # numero di prodotti da inserire nel carrello
         productsNumber = len(products)  # numero di prodotti in magazzino
         items_in_cart = []  # articoli aggiunti al carrello
@@ -24,8 +23,7 @@ if __name__ == "__main__":
         for _ in range(0, shoppingCartDimension):
             choosenProd = random.choice(products)  # seleziona casualmente un prodotto
             prodQuantity = choosenProd['quantity']
-            getQuantity = random.randint(1, 0.8 * choosenProd[
-                'quantity'])  # preleva una quantità tra 1 e l'80% della disponibilità
+            getQuantity = random.randint(1, 0.8 * choosenProd['quantity'])  # preleva una quantità tra 1 e l'80% della disponibilità
 
             items_in_cart.append({
                 "barcode": choosenProd['barcode'],

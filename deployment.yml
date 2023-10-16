@@ -1,21 +1,21 @@
-apiVersion: apps/v1 
-kind: Deployment 
-metadata: 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
   name: supermarket
-spec: 
-  replicas: 1 
-  selector: 
-    matchLabels: 
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
       app: supermarket
-  template: 
-    metadata: 
-      labels: 
-        app: supermarket  
-    spec: 
-      containers: 
+  template:
+    metadata:
+      labels:
+        app: supermarket
+    spec:
+      containers:
         - name: supermarket
           image: supermarket
-          imagePullPolicy: Never 
+          imagePullPolicy: Never
           ports:
             - containerPort: 5000
               protocol: TCP

@@ -4,7 +4,7 @@ import psycopg2
 
 from MonolithicApp.Globals.DBHandler import DBHandler
 from MonolithicApp.Globals import GlobalConstants
-from MonolithicApp.Globals import OrderState
+from MonolithicApp.Globals import Enumeratives
 
 
 class OrdersManager:
@@ -30,7 +30,7 @@ class OrdersManager:
         badge = jsonOrder["badge_n"]
         print("Badge_n = ", badge)
         createOrder_query = f"INSERT INTO {GlobalConstants.ORDERS_DBTABLE}(badge_n, orderdate, orderstate) " \
-                            f"VALUES({badge}, '{now}', '{OrderState.OrderState.CREATED.name}') " \
+                            f"VALUES({badge}, '{now}', '{Enumeratives.OrderState.CREATED.name}') " \
                             f"RETURNING orderid;"
         orderID = self.db.update(createOrder_query, response=True)[0][0]
         print("Order ID = ", orderID)
@@ -65,6 +65,6 @@ class OrdersManager:
             "comment":"Order created",
             "badge_n": jsonOrder["badge_n"],
             "orderID": orderID,
-            "orderState": OrderState.OrderState.CONFIRMED.name,
+            "orderState": Enumeratives.OrderState.CONFIRMED.name,
             "price": totalPrice
         }

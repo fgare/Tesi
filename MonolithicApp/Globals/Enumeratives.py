@@ -9,3 +9,8 @@ class OrderState(Enum):
     REFUSED = 4
     CANCELLED = 5
     DELIVERED = 6
+
+
+class TokenState(Enum):
+    VALID = 0,
+    EXPIRED = 1

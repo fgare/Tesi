@@ -1,5 +1,5 @@
 from MonolithicApp.Globals.DBHandler import DBHandler
-from MonolithicApp.Globals.OrderState import OrderState
+from MonolithicApp.Globals.Enumeratives import OrderState
 from MonolithicApp.Globals import GlobalConstants
 
 

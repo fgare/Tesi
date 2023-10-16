@@ -6,7 +6,7 @@ import random
 
 from MonolithicApp.Globals.DBHandler import DBHandler
 from MonolithicApp.Globals import GlobalConstants
-from MonolithicApp.Globals.OrderState import OrderState
+from MonolithicApp.Globals.Enumeratives import OrderState
 
 
 class PaymentsManager:
