@@ -14,3 +14,8 @@ class OrderState(Enum):
 class TokenState(Enum):
     VALID = 0,
     EXPIRED = 1
+
+
+class Roles(Enum):
+    CUSTOMER = 0,
+    SUPPLIER = 1

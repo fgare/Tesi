@@ -6,16 +6,18 @@ from MonolithicApp.Globals.DBHandler import DBHandler
 from MonolithicApp.Globals import GlobalConstants
 from MonolithicApp.Globals import Enumeratives
 
-
 class OrdersManager:
 
     def __init__(self):
         self.db = DBHandler()
 
     def newOrder(self, jsonOrder):
-        # TODO: affinare, si può restituire un errore nel caso in cui la merce non sia presente in quantità sufficiente
-
         def calculatePrice(products):
+            """
+            Calcola il prezzo totale di un carrello della spesa.
+            :param products: Lista di prodotti
+            :return: Prezzo totale
+            """
             total = 0
             for element in products:
                 getPrice_query = f"SELECT unit_price FROM {GlobalConstants.ARTICLES_DBTABLE} " \
@@ -52,14 +54,29 @@ class OrdersManager:
         totalPrice = 0
         try:
             totalPrice = calculatePrice(items)
+            # In un'unica transazione modifica la quantità residua di ogni prodotto e
+            # memorizza l'ordine (prodotti acquistati e relativa quantità)
             self.db.update(updateQuantities_query + saveOrderItems_query)
+            # Salva il prezzo totale dell'ordine
             self.db.update(f"UPDATE {GlobalConstants.ORDERS_DBTABLE} SET total_price = {totalPrice} WHERE orderid = {orderID};")
         except psycopg2.Error as e:
             # se si genera un'eccezione devo cancellare anche l'ordine
-            deleteOrder_query = f"DELETE FROM {GlobalConstants.ORDERS_DBTABLE} " \
+            cancelOrder_query = f"UPDATE {GlobalConstants.ORDERS_DBTABLE} " \
+                                F"SET orderstate = {Enumeratives.OrderState.CANCELLED.name} " \
                                 f"WHERE orderID={orderID};"
-            self.db.update(deleteOrder_query)
-            print("Query error")
+            self.db.update(cancelOrder_query)
+            if e.pgcode == "2200":
+                print("Insufficient quantity")
+            else:
+                print("Query error")
+            # Restituisce un json indicante l'errore
+            return {
+                "comment": "Order cancelled",
+                "badge_n": jsonOrder["badge_n"],
+                "orderID": orderID,
+                "orderState": Enumeratives.OrderState.CANCELLED.name,
+                "price": totalPrice
+            }
 
         return {
             "comment":"Order created",
