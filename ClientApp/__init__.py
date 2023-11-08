@@ -41,16 +41,17 @@ def login(customer):
 
 
 def productList():
-    requestHeader = {"authorization": token}
+    requestHeader = {"Authorization": token}
     return requests.get(BASE + "/productsList", headers=requestHeader)
 
 
 if __name__ == "__main__":
-    while True:
+    # while True:
         # Eseguo continuamente il login con utenti diversi finchè uno non va a buon fine (in teoria subito)
         while True:
             selectedCustomer = randomSelectUser()
             loginSuccess = login(selectedCustomer)
+            if DEBUG: print("Login success > ", loginSuccess)
             if loginSuccess[0]:
                 token = loginSuccess[1]
                 break

@@ -1,4 +1,6 @@
 import datetime
+import json
+
 import jwt
 
 from MonolithicApp.Globals.DBHandler import DBHandler
@@ -52,19 +54,31 @@ class AuthenticationManager:
             return {"comment": "Login failed, wrong username or password", "token":None}
 
 
-def checkToken(token) -> bool:
+def checkToken(token):
     """Decodifica il token JWT e verifica se esso è ancora valido o scaduto """
+    decoded = None
     try:
         decoded = jwt.decode(token, encryptionKey, encryptionAlgorithm)
+        print("Decoded token > ", decoded)
     except jwt.exceptions.InvalidTokenError as ite:
         print("Invalid token supplied {%s}" % token)
         return False
 
     now = datetime.datetime.now()
-    if decoded['expires'] > now:
-        return True
-    return False
+    expiration = datetime.datetime.strptime(decoded['expires'], "%Y-%m-%d %H:%M:%S")
+
+    if expiration > now:
+        return True, decoded
+    return False, None
 
 
 if __name__ == "__main__":
-# TODO: testare funzione chechtoken
+    credentials = {
+        "email": "Young@example.com",
+        "password": "a659d44b0a12d28b906ddc2cc3222053af4eb4d56a67bb3d1ce33acc495f67a3"
+    }
+    auth_token = AuthenticationManager().authenticateUser(credentials)
+    token = auth_token['token']
+
+    decoded = checkToken(token)
+    print("Encoded token > ", token, "\nCheck > ", decoded[0], "\nDecoded > ", decoded[1])

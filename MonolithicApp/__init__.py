@@ -142,13 +142,19 @@ def trackOrder():
 
 
 def _isValid_token(token):
+    """
+    Controlla se il token fornito è ancora valido
+    :param token: il token in formato stringa
+    :return: Booleano, un commento sotto forma di dizionario, il token decodificato oppure None
+    """
     # token = json.loads(token)
+    checked = checkToken(token)
     if token is None:
-        return False, {"comment": "Token not provided"}
-    elif not checkToken(token):
-        return False, {"comment": "Invalid token"}
+        return False, {"comment": "Token not provided"}, None
+    elif not checked[0]:
+        return False, {"comment": "Invalid token"}, checked[1]
     else:
-        return True, {"comment": "Token is valid"}
+        return True, {"comment": "Token is valid"}, None
 
 
 if __name__ == "__main__":
