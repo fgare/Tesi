@@ -31,5 +31,6 @@ class Customer:
             "role": self._role
         }
 
-    def toString(self):
-        return json.dumps(self.toDict())
+    def __str__(self):
+        return f"{{ID: {self._id}, Surname: {self._surname}, Badge: {self._badge}, Sex: {self._sex}, " \
+                f"DoB: {self._dob}, Role: {self._role}, eMail: {self._email}, Password: {self._password}"

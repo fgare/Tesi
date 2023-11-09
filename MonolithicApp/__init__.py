@@ -26,10 +26,11 @@ def productList():
     validToken = _isValid_token(token)
     if not validToken[0]:
         return 401, json.dumps(validToken[1])
+    token = validToken[2]
 
     # richiesta della lista di prodotti
     if request.method == "GET":
-        if token['role'] != Roles.CUSTOMER:
+        if token['role'] != Roles.CUSTOMER.name:
             return json.dumps({"comment": "Unauthorized user"}), 401
 
         try:
@@ -41,7 +42,7 @@ def productList():
     elif request.method == "POST":  # inserimento prodotti
         print("Richiesta > ", request.data.decode())
         # verifica il ruolo del client, solo i fornitori possono inserire prodotti
-        if token['role'] != Roles.SUPPLIER:
+        if token['role'] != Roles.SUPPLIER.name:
             return json.dumps({"comment": "Insufficient privileges"}), 401
 
         try:
@@ -122,6 +123,11 @@ def customerLogin():
 
 @app.route("/payOrder", methods=["POST"])
 def payOrder():
+    token = json.loads(request.headers.get('Authorizarion'))
+    validToken = _isValid_token(token)
+    if not validToken[0]:
+        return 401, json.dumps(validToken[1])
+
     if request.method == "POST":
         print("Incoming order summary:\n", request.data.decode())
         if request.is_json:
@@ -149,12 +155,10 @@ def _isValid_token(token):
     """
     # token = json.loads(token)
     checked = checkToken(token)
-    if token is None:
-        return False, {"comment": "Token not provided"}, None
-    elif not checked[0]:
-        return False, {"comment": "Invalid token"}, checked[1]
-    else:
-        return True, {"comment": "Token is valid"}, None
+    if checked[0]:
+        return True, {"comment": "Token is valid"}, checked[1]
+    return False, {"comment": "Invalid token"}, None
+
 
 
 if __name__ == "__main__":

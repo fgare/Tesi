@@ -46,3 +46,4 @@ if __name__ == "__main__":
     obj_json = json.dumps(newObj)
     realObj = Article.parse(obj_json)
     print(f"{realObj} \n{realObj.toDict()}")
+    print(realObj)

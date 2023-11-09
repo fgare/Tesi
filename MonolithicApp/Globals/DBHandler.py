@@ -21,7 +21,7 @@ class DBHandler:
             password="postgres",
             port=5433
         )
-        print("Connection > ", newConn)
+        print("DB connection > ", newConn)
         return newConn
 
     def select(self, query):

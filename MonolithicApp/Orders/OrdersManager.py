@@ -62,7 +62,7 @@ class OrdersManager:
         except psycopg2.Error as e:
             # se si genera un'eccezione devo cancellare anche l'ordine
             cancelOrder_query = f"UPDATE {GlobalConstants.ORDERS_DBTABLE} " \
-                                F"SET orderstate = {Enumeratives.OrderState.CANCELLED.name} " \
+                                f"SET orderstate = {Enumeratives.OrderState.CANCELLED.name} " \
                                 f"WHERE orderID={orderID};"
             self.db.update(cancelOrder_query)
             if e.pgcode == "2200":

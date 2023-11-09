@@ -1,17 +1,29 @@
 import json
 import os
-import csv
 import linecache
 
-import requests, datetime, random
-from ClientApp.Customer import Customer
+import requests
+import random
+from MonolithicApp.Globals.Customer import Customer
+from MonolithicApp.Globals.Article import Article
 
 BASE = "http://127.0.0.1:5000/"
-MAX = 100
-CUSTOMER_MAX_ID = 2932
+MAXITEMS = 100  # Dimensione massima del carrello
+N_OF_ARTICLES = 168  # numero di differenti articoli nel magazzino
+CUSTOMER_MAX_ID = 2932  # Numero di clienti registrati
+MAX_PURCHASABLE = 20  # Numero massimo di pezzi acquistabili per ogni prodotto
 customers_fileName = "customers.csv"
 token = ""
 DEBUG = True
+
+"""
+Come procedere:
+1. Login e ottengo il token
+2. Elenco prodotti
+3. Scelgo prodotti e quantità
+4. Genero un nuovo ordine
+5. Pago ordine
+"""
 
 
 def randomSelectUser():
@@ -41,20 +53,61 @@ def login(customer):
 
 
 def productList():
+    """
+    Richiede la lista di prodotti
+    :return: Status code della richiesta e una lista di dizionari con i prodotti
+    """
     requestHeader = {"Authorization": token}
-    return requests.get(BASE + "/productsList", headers=requestHeader)
+    response = requests.get(BASE + "/productsList", headers=requestHeader)
+
+    # considera ogni dizionario corrispondente a un prodotto e lo converte nell'oggetto Article
+    products = json.loads(response.text)
+    articles = []
+    for el in products:
+        articles.append(Article.parse(el))
+
+    return response.status_code, articles
+
+
+def fillCart(products, numberOfItems) -> set:
+    cart = set()
+    for i in range(numberOfItems):
+        drawnProduct = random.randint(0, len(products) - 1)  # sorteggia un prodotto da inserire nel carrello
+        drawnQuantity = random.randint(1, MAX_PURCHASABLE)  # sorteggia la quantità di prodotto da acquistare
+        choosenProd = products.pop(drawnProduct)  # rimuove e ritorna l'elemento nella posizione specificata
+        choosenProd.quantity = drawnQuantity
+        cart.add(choosenProd)
+    return cart
+
+
+def set_to_dict(cart: set) -> list:
+    articlesList = []
+    while cart:
+        elem = cart.pop()
+        articlesList.append(elem.toDict())
+    return articlesList
 
 
 if __name__ == "__main__":
-    # while True:
-        # Eseguo continuamente il login con utenti diversi finchè uno non va a buon fine (in teoria subito)
-        while True:
-            selectedCustomer = randomSelectUser()
-            loginSuccess = login(selectedCustomer)
-            if DEBUG: print("Login success > ", loginSuccess)
-            if loginSuccess[0]:
-                token = loginSuccess[1]
-                break
+    # Eseguo continuamente il login con utenti diversi finchè uno non va a buon fine (in teoria subito)
+    while True:
+        selectedCustomer = randomSelectUser()
+        loginSuccess = login(selectedCustomer)
+        if DEBUG: print("Login success > ", loginSuccess)
+        if loginSuccess[0]:
+            token = loginSuccess[1]
+            break
 
-        # Richiedo elenco prodotti
-        print("Productlist > ", productList())
+    products = productList()[1]  # Richiedo elenco prodotti
+    numOfItems = random.randint(5,MAXITEMS)  # sorteggia il numero di prodotti da inserire nel carrello
+    cart = fillCart(products, numOfItems)  # riempi il carrello, ritorna un set con i prodotti
+    if DEBUG: print(f"Received {len(products)} products. Cart dimension = {len(cart)}")
+
+    # genero nuovo ordine
+    response = requests.post(
+        url = BASE + "/newOrder",
+        headers = {"Authorization": token},
+        data= json.dumps(set_to_dict(cart))
+    )
+
+    print(response.text)

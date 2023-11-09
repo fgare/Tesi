@@ -26,7 +26,7 @@ class AuthenticationManager:
 
         # utente non esiste, ho una lista vuota
         if len(user) == 0:
-            return {"comment": "Login failed, wrong username or password", "token":None}
+            return {"comment": "Login failed, wrong username or password", "token": None}
 
         # utente esiste
         user = user[0]
@@ -51,7 +51,7 @@ class AuthenticationManager:
                 "token": encoded
             }
         else:
-            return {"comment": "Login failed, wrong username or password", "token":None}
+            return {"comment": "Login failed, wrong username or password", "token": None}
 
 
 def checkToken(token):
