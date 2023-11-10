@@ -34,7 +34,9 @@ def productList():
             return json.dumps({"comment": "Unauthorized user"}), 401
 
         try:
-            return json.dumps(WarehouseManager().getProductsList()), 200
+            listOfProducts = WarehouseManager().getProductsList()
+            print("Return ", len(listOfProducts), " products")
+            return json.dumps(listOfProducts), 200
         except DatabaseError as e:
             print(e.args[0])
             return json.dumps({"comment": "Database error"}), 500
@@ -64,13 +66,18 @@ def newOrder():
     """
     Gestisce la creazione di un nuovo ordine
     """
-    token = json.loads(request.headers.get('Authorizarion'))
+    token = request.headers.get('Authorizarion')
+    print("Token > ", token)
     validToken = _isValid_token(token)
-    if not validToken[0]:
+    if validToken[0]:
+        token = validToken[2]
+        print(validToken[1])
+    else:
         return 401, json.dumps(validToken[1])
 
+
     if request.method == "POST":
-        if token['role'] != Roles.CUSTOMER:
+        if token['role'] != Roles.CUSTOMER.name:
             return 401, json.dumps({"comment": "This user can't make new orders"})
 
         print("Ordine inviato:\n", request.data.decode())

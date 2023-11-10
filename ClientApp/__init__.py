@@ -69,8 +69,9 @@ def productList():
     return response.status_code, articles
 
 
-def fillCart(products, numberOfItems) -> set:
+def fillCart(products) -> set:
     cart = set()
+    numberOfItems = random.randint(1, len(products))  # sorteggia il numero di prodotti da inserire nel carrello
     for i in range(numberOfItems):
         drawnProduct = random.randint(0, len(products) - 1)  # sorteggia un prodotto da inserire nel carrello
         drawnQuantity = random.randint(1, MAX_PURCHASABLE)  # sorteggia la quantità di prodotto da acquistare
@@ -89,7 +90,7 @@ def set_to_dict(cart: set) -> list:
 
 
 if __name__ == "__main__":
-    # Eseguo continuamente il login con utenti diversi finchè uno non va a buon fine (in teoria subito)
+    # Eseguo continuamente il login con utenti diversi finché uno non va a buon fine (in teoria subito)
     while True:
         selectedCustomer = randomSelectUser()
         loginSuccess = login(selectedCustomer)
@@ -98,16 +99,16 @@ if __name__ == "__main__":
             token = loginSuccess[1]
             break
 
-    products = productList()[1]  # Richiedo elenco prodotti
-    numOfItems = random.randint(5,MAXITEMS)  # sorteggia il numero di prodotti da inserire nel carrello
-    cart = fillCart(products, numOfItems)  # riempi il carrello, ritorna un set con i prodotti
-    if DEBUG: print(f"Received {len(products)} products. Cart dimension = {len(cart)}")
+    products = productList()[1]  # Richiedo elenco prodotti, ottengo lista di Articles
+    if DEBUG: print(f"Received {len(products)} products. ", end='')
+    cart = fillCart(products)  # riempi il carrello, ritorna un set di Articles
+    if DEBUG: print(f"Cart dimension = {len(cart)}")
 
     # genero nuovo ordine
     response = requests.post(
-        url = BASE + "/newOrder",
-        headers = {"Authorization": token},
-        data= json.dumps(set_to_dict(cart))
+        url=BASE + "/newOrder",
+        headers={"Authorizarion": token},
+        data=json.dumps(set_to_dict(cart))
     )
 
-    print(response.text)
+    if DEBUG: print((response.status_code,response.text) if response.status_code==200 else response.status_code)
