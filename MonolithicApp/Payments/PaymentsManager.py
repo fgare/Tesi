@@ -17,16 +17,16 @@ class PaymentsManager:
     def pay(self, jsonSummary):
         orderID = jsonSummary["orderID"]
         checkOrder_query = f"SELECT total_price, orderstate FROM {GlobalConstants.ORDERS_DBTABLE} " \
-                           f"WHERE orderid = {orderID};"
+                           f"WHERE orderid={orderID};"
         try:
             orderSummary = self.db.select(checkOrder_query)
         except psycopg2.Error as e:
             return {
-                "comment": "Unrecognized order ID"
+                "comment": "Database error"
             }
         orderSummary = orderSummary[0]  # estrae l'unico elemento presente nella lista
 
-        if not orderSummary['orderstate'] == OrderState.CREATED.name:
+        if not orderSummary['orderstate'] == OrderState.CONFIRMED.name:
             return {
                 "comment": "It is impossible to pay this order"
             }
@@ -36,8 +36,8 @@ class PaymentsManager:
         # Nel 10% dei casi il pagamento viene rifiutato
         if random.random() < 0.1:
             updateOrderState_query = f"UPDATE {GlobalConstants.ORDERS_DBTABLE} " \
-                                     f"SET orderstate = '{OrderState.REFUSED.name}' " \
-                                     f"WHERE orderid = {orderID};"
+                                     f"SET orderstate ='{OrderState.REFUSED.name}' " \
+                                     f"WHERE orderid={orderID};"
             self.db.update(updateOrderState_query)
             print(f"Order ID={orderID} has been refused")
 
@@ -50,8 +50,8 @@ class PaymentsManager:
 
         # pagamento accettato
         updateOrderState_query = f"UPDATE {GlobalConstants.ORDERS_DBTABLE} " \
-                                 f"SET orderstate = '{OrderState.PAID.name}' " \
-                                 f"WHERE orderid = {orderID};"
+                                 f"SET orderstate='{OrderState.PAID.name}' " \
+                                 f"WHERE orderid={orderID};"
         self.db.update(updateOrderState_query)
         print(f"Order ID={orderID} has been paid")
 

@@ -37,7 +37,7 @@ class AuthenticationManager:
             expirity = createdOn + datetime.timedelta(minutes=30)
 
             payload = {
-                "user": user['customerid'],
+                "badge_n": user['badge_n'],
                 "created": createdOn.strftime("%Y-%m-%d %H:%M:%S"),
                 "expires": expirity.strftime("%Y-%m-%d %H:%M:%S"),
                 "role": user['customerrole']

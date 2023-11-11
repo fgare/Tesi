@@ -73,26 +73,34 @@ def newOrder():
         token = validToken[2]
         print(validToken[1])
     else:
-        return 401, json.dumps(validToken[1])
-
+        return json.dumps(validToken[1]), 401
 
     if request.method == "POST":
         if token['role'] != Roles.CUSTOMER.name:
-            return 401, json.dumps({"comment": "This user can't make new orders"})
+            return json.dumps({"comment": "This user can't make new orders"}), 401
 
-        print("Ordine inviato:\n", request.data.decode())
+        print("Ordine riceuto:\n", request.data.decode())
+        print("isJson = ", request.is_json)
         try:
             if request.is_json:
-                response = OrdersManager().newOrder(request.get_json())
-                return 201, json.dumps(response)
+                print("request.getjson() > ", request.get_json())
+                addInfo = {
+                    "badge_n": token['badge_n'],
+                    "role": token['role'],
+                    "items": request.get_json()
+                }
+                print("AddInfo = ", addInfo)
+                response = OrdersManager().newOrder(addInfo)
+                print("Response > ", response, ". Type > ", type(response))
+                return json.dumps(response), 201
             else:
-                return 400, json.dumps({"comment": "No json provided"})
+                return json.dumps({"comment": "No json provided"}), 400
         except DatabaseError as e:
             print(e.args[0])
-            return 500, json.dumps({"comment": "Database error"})
+            return json.dumps({"comment": "Database error"}), 500
 
     else:
-        return 405, json.dumps({"comment": f"Method {request.method} not supported"})
+        return json.dumps({"comment": f"Method {request.method} not supported"}), 405
 
 
 @app.route("/registerCustomer", methods=["POST"])
@@ -105,14 +113,14 @@ def registerCustomer():
         try:
             if request.is_json:
                 CustomersManager().addNewCustomer(request.get_json())
-                return 201, json.dumps({"comment": "Customer added"})
+                return json.dumps({"comment": "Customer added"}), 201
             else:
-                return 400, json.dumps({"comment": "No json provided"})
+                return json.dumps({"comment": "No json provided"}), 400
         except DatabaseError as e:
             print(e.args[0])
-            return 500, json.dumps({"comment": "Database error"})
+            return json.dumps({"comment": "Database error"}), 500
     else:
-        return 405, json.dumps({"comment": f"Method {request.method} not supported"})
+        return json.dumps({"comment": f"Method {request.method} not supported"}), 405
 
 
 @app.route("/login", methods=["POST"])
@@ -130,20 +138,24 @@ def customerLogin():
 
 @app.route("/payOrder", methods=["POST"])
 def payOrder():
-    token = json.loads(request.headers.get('Authorizarion'))
+    token = request.headers.get('Authorizarion')
+    print("Token > ", token)
     validToken = _isValid_token(token)
-    if not validToken[0]:
-        return 401, json.dumps(validToken[1])
+    if validToken[0]:
+        token = validToken[2]
+        print(validToken[1])
+    else:
+        return json.dumps(validToken[1]), 401
 
     if request.method == "POST":
         print("Incoming order summary:\n", request.data.decode())
         if request.is_json:
             response = PaymentsManager().pay(request.get_json())
-            return 200, json.dumps(response)
+            return json.dumps(response), 200
         else:
-            return 400, json.dumps({"comment": "No json provided"})
+            return json.dumps({"comment": "No json provided"}), 400
     else:
-        return 405, json.dumps({"comment": f"Method {request.method} not supported"})
+        return json.dumps({"comment": f"Method {request.method} not supported"}), 405
 
 
 @app.route("/trackOrder", methods=["GET"])
@@ -151,7 +163,7 @@ def trackOrder():
     if request.method == "GET":
         trackingID = int(request.args.get('id'))
         print("Tracking ID = ", trackingID)
-        return 200, json.dumps(ShippingsManager().trackOrder(trackingID))
+        return json.dumps(ShippingsManager().trackOrder(trackingID)), 200
 
 
 def _isValid_token(token):

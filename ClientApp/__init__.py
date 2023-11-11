@@ -11,7 +11,7 @@ BASE = "http://127.0.0.1:5000/"
 MAXITEMS = 100  # Dimensione massima del carrello
 N_OF_ARTICLES = 168  # numero di differenti articoli nel magazzino
 CUSTOMER_MAX_ID = 2932  # Numero di clienti registrati
-MAX_PURCHASABLE = 20  # Numero massimo di pezzi acquistabili per ogni prodotto
+MAX_PURCHASABLE = 10  # Numero massimo di pezzi acquistabili per ogni prodotto
 customers_fileName = "customers.csv"
 token = ""
 DEBUG = True
@@ -71,9 +71,9 @@ def productList():
 
 def fillCart(products) -> set:
     cart = set()
-    numberOfItems = random.randint(1, len(products))  # sorteggia il numero di prodotti da inserire nel carrello
+    numberOfItems = random.randint(1, 15)  # sorteggia il numero di prodotti da inserire nel carrello
     for i in range(numberOfItems):
-        drawnProduct = random.randint(0, len(products) - 1)  # sorteggia un prodotto da inserire nel carrello
+        drawnProduct = random.randint(0, len(products)-1)  # sorteggia un prodotto da inserire nel carrello
         drawnQuantity = random.randint(1, MAX_PURCHASABLE)  # sorteggia la quantità di prodotto da acquistare
         choosenProd = products.pop(drawnProduct)  # rimuove e ritorna l'elemento nella posizione specificata
         choosenProd.quantity = drawnQuantity
@@ -90,25 +90,37 @@ def set_to_dict(cart: set) -> list:
 
 
 if __name__ == "__main__":
-    # Eseguo continuamente il login con utenti diversi finché uno non va a buon fine (in teoria subito)
-    while True:
-        selectedCustomer = randomSelectUser()
-        loginSuccess = login(selectedCustomer)
-        if DEBUG: print("Login success > ", loginSuccess)
-        if loginSuccess[0]:
-            token = loginSuccess[1]
-            break
+    for _ in range(100):
+        # Eseguo continuamente il login con utenti diversi finché uno non va a buon fine (in teoria subito)
+        while True:
+            selectedCustomer = randomSelectUser()
+            loginSuccess = login(selectedCustomer)
+            if DEBUG: print("Login success > ", loginSuccess)
+            if loginSuccess[0]:
+                token = loginSuccess[1]
+                break
 
-    products = productList()[1]  # Richiedo elenco prodotti, ottengo lista di Articles
-    if DEBUG: print(f"Received {len(products)} products. ", end='')
-    cart = fillCart(products)  # riempi il carrello, ritorna un set di Articles
-    if DEBUG: print(f"Cart dimension = {len(cart)}")
+        products = productList()[1]  # Richiedo elenco prodotti, ottengo lista di Articles
+        if DEBUG: print(f"Received {len(products)} products. ", end='')
+        cart = fillCart(products)  # riempi il carrello, ritorna un set di Articles
+        if DEBUG: print(f"Cart dimension = {len(cart)}")
 
-    # genero nuovo ordine
-    response = requests.post(
-        url=BASE + "/newOrder",
-        headers={"Authorizarion": token},
-        data=json.dumps(set_to_dict(cart))
-    )
+        # genero nuovo ordine
+        response = requests.post(
+            url=BASE + "/newOrder",
+            headers={"Authorizarion": token, "Content-Type": "application/json"},
+            data=json.dumps(set_to_dict(cart))
+        )
 
-    if DEBUG: print((response.status_code,response.text) if response.status_code==200 else response.status_code)
+        if DEBUG: print((response.status_code,response.text) if response.status_code==201 else response.status_code)
+        orderInfo = json.loads(response.text)
+
+        response = requests.post(
+            url=BASE+"/payOrder",
+            headers={"Authorizarion": token, "Content-Type": "application/json"},
+            data=json.dumps({"orderID":orderInfo['orderID']})
+        )
+        if DEBUG: print((response.status_code,response.text) if response.status_code==201 else response.status_code)
+
+        print("Order shipped")
+
