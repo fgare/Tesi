@@ -90,7 +90,7 @@ def set_to_dict(cart: set) -> list:
 
 
 if __name__ == "__main__":
-    for _ in range(100):
+    for _ in range(10):
         # Eseguo continuamente il login con utenti diversi finché uno non va a buon fine (in teoria subito)
         while True:
             selectedCustomer = randomSelectUser()

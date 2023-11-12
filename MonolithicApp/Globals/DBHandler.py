@@ -1,6 +1,6 @@
 import json
-
 import psycopg2
+from
 
 
 class DBHandler:

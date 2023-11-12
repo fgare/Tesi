@@ -1,4 +1,8 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request
+from psycopg2 import DatabaseError
+import json
+import logging
+
 from MonolithicApp.Warehouse.WarehouseManager import WarehouseManager
 from MonolithicApp.Orders.OrdersManager import OrdersManager
 from MonolithicApp.Customers.CustomersManager import CustomersManager
@@ -7,11 +11,11 @@ from MonolithicApp.Authentication.AuthenticationManager import AuthenticationMan
 from MonolithicApp.Authentication.AuthenticationManager import checkToken
 from MonolithicApp.Shippings.ShippingManager import ShippingsManager
 from MonolithicApp.Globals.Enumeratives import Roles
-from psycopg2 import DatabaseError
-import json
+
 from flask_restful import Api, Resource
 
 app = Flask(__name__)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 
 @app.route("/productsList", methods=["GET", "POST"])
@@ -21,8 +25,10 @@ def productList():
     - GET: restituisce l'elenco di tutti i prodotti presenti in magazzino con relative quantità
     - POST: permette ai fornitori di aggiungere prodotti nel magazzino
     """
+    logger = logging.getLogger("productsList_log")
+
     token = request.headers.get('Authorization')
-    print("Token = ", token)
+    logger.info(f"Token = {token}")
     validToken = _isValid_token(token)
     if not validToken[0]:
         return 401, json.dumps(validToken[1])
@@ -35,14 +41,14 @@ def productList():
 
         try:
             listOfProducts = WarehouseManager().getProductsList()
-            print("Return ", len(listOfProducts), " products")
+            logger.debug(f"Return {len(listOfProducts)} products")
             return json.dumps(listOfProducts), 200
         except DatabaseError as e:
             print(e.args[0])
             return json.dumps({"comment": "Database error"}), 500
 
     elif request.method == "POST":  # inserimento prodotti
-        print("Richiesta > ", request.data.decode())
+        logger.info(f"Richiesta > {request.data.decode()}")
         # verifica il ruolo del client, solo i fornitori possono inserire prodotti
         if token['role'] != Roles.SUPPLIER.name:
             return json.dumps({"comment": "Insufficient privileges"}), 401
@@ -54,7 +60,7 @@ def productList():
             else:
                 return json.dumps({"comment": "Error - can't find json file"}), 400
         except DatabaseError as e:
-            print(e.args[0])
+            logger.critical(e.args[0])
             return json.dumps({"comment": "Database error"}), 500
 
     else:
@@ -66,12 +72,14 @@ def newOrder():
     """
     Gestisce la creazione di un nuovo ordine
     """
+    logger = logging.getLogger("newOrder_log")
+
     token = request.headers.get('Authorizarion')
-    print("Token > ", token)
+    logger.info(f"Token > {token}")
     validToken = _isValid_token(token)
     if validToken[0]:
         token = validToken[2]
-        print(validToken[1])
+        logger.debug(validToken[1])
     else:
         return json.dumps(validToken[1]), 401
 
@@ -79,24 +87,23 @@ def newOrder():
         if token['role'] != Roles.CUSTOMER.name:
             return json.dumps({"comment": "This user can't make new orders"}), 401
 
-        print("Ordine riceuto:\n", request.data.decode())
-        print("isJson = ", request.is_json)
+        logger.info(f"Ordine riceuto: {request.data.decode()}")
+        logger.debug(f"isJson = {request.is_json}")
         try:
             if request.is_json:
-                print("request.getjson() > ", request.get_json())
+                logger.debug(f"request.getjson() > {request.get_json()}")
                 addInfo = {
                     "badge_n": token['badge_n'],
                     "role": token['role'],
                     "items": request.get_json()
                 }
-                print("AddInfo = ", addInfo)
                 response = OrdersManager().newOrder(addInfo)
-                print("Response > ", response, ". Type > ", type(response))
+                logger.info(f"Response > {response}. Type > {type(response)}")
                 return json.dumps(response), 201
             else:
                 return json.dumps({"comment": "No json provided"}), 400
         except DatabaseError as e:
-            print(e.args[0])
+            logger.critical(e.args[0])
             return json.dumps({"comment": "Database error"}), 500
 
     else:
@@ -108,8 +115,10 @@ def registerCustomer():
     """
     Permette la registrazione di un nuovo cliente
     """
+    logger = logging.getLogger("registerCustomer_log")
+
     if request.method == "POST":
-        print("Registrazione nuovo cliente >\n", request.data.decode())
+        logger.info(f"Registrazione nuovo cliente > {request.data.decode()}")
         try:
             if request.is_json:
                 CustomersManager().addNewCustomer(request.get_json())
@@ -117,7 +126,7 @@ def registerCustomer():
             else:
                 return json.dumps({"comment": "No json provided"}), 400
         except DatabaseError as e:
-            print(e.args[0])
+            logger.critical(e.args[0])
             return json.dumps({"comment": "Database error"}), 500
     else:
         return json.dumps({"comment": f"Method {request.method} not supported"}), 405
@@ -125,8 +134,10 @@ def registerCustomer():
 
 @app.route("/login", methods=["POST"])
 def customerLogin():
+    logger = logging.getLogger("login_log")
+
     if request.method == "POST":
-        print("Sent request:\n", request.data.decode())
+        logger.info("Sent request: {request.data.decode()}")
         if request.is_json:
             response = AuthenticationManager().authenticateUser(request.get_json())
             return json.dumps(response), 200
@@ -138,12 +149,14 @@ def customerLogin():
 
 @app.route("/payOrder", methods=["POST"])
 def payOrder():
+    logger = logging.getLogger("pay_log")
+
     token = request.headers.get('Authorizarion')
-    print("Token > ", token)
+    logger.info(f"Token > {token}")
     validToken = _isValid_token(token)
     if validToken[0]:
         token = validToken[2]
-        print(validToken[1])
+        logger.info(validToken[1])
     else:
         return json.dumps(validToken[1]), 401
 
@@ -160,9 +173,11 @@ def payOrder():
 
 @app.route("/trackOrder", methods=["GET"])
 def trackOrder():
+    logger = logging.getLogger("track_log")
+
     if request.method == "GET":
         trackingID = int(request.args.get('id'))
-        print("Tracking ID = ", trackingID)
+        logger.info("Tracking ID = ", trackingID)
         return json.dumps(ShippingsManager().trackOrder(trackingID)), 200
 
 
