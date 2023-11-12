@@ -1,11 +1,14 @@
+import datetime
 import json
 import os
 import linecache
+import logging
 
 import requests
 import random
 from MonolithicApp.Globals.Customer import Customer
 from MonolithicApp.Globals.Article import Article
+from ClientApp.Stopwatch import Stopwatch
 
 BASE = "http://127.0.0.1:5000/"
 MAXITEMS = 100  # Dimensione massima del carrello
@@ -14,7 +17,8 @@ CUSTOMER_MAX_ID = 2932  # Numero di clienti registrati
 MAX_PURCHASABLE = 10  # Numero massimo di pezzi acquistabili per ogni prodotto
 customers_fileName = "customers.csv"
 token = ""
-DEBUG = True
+logging.basicConfig(level=logging.CRITICAL, format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger("logger")
 
 """
 Come procedere:
@@ -37,13 +41,13 @@ def randomSelectUser():
     with open(customer_filePath, 'r', newline=""):
         lineNumber = random.randint(2, CUSTOMER_MAX_ID)
         line = linecache.getline(customer_filePath, lineNumber)
-        if DEBUG: print("Selected line = ", line)
+        logger.debug(f"Selected line = {line}")
         return Customer(line)
 
 
 def login(customer):
     reply = requests.post(BASE + "/login", json=customer.getCredentials())
-    if DEBUG: print(f"Status Code = {reply.status_code}\nBody = {reply.text}")
+    logger.debug(f"Status Code = {reply.status_code}\nBody = {reply.text}")
 
     if reply.status_code == 200:
         body = json.loads(reply.text)
@@ -90,20 +94,28 @@ def set_to_dict(cart: set) -> list:
 
 
 if __name__ == "__main__":
-    for _ in range(10):
+    for _ in range(100):
+        interval = Stopwatch(6)
+        interval.lap()  # inizio
+
         # Eseguo continuamente il login con utenti diversi finché uno non va a buon fine (in teoria subito)
         while True:
             selectedCustomer = randomSelectUser()
             loginSuccess = login(selectedCustomer)
-            if DEBUG: print("Login success > ", loginSuccess)
+            logger.debug(f"Login success > {loginSuccess}")
             if loginSuccess[0]:
                 token = loginSuccess[1]
                 break
 
+        interval.lap()  # completato login
+
         products = productList()[1]  # Richiedo elenco prodotti, ottengo lista di Articles
-        if DEBUG: print(f"Received {len(products)} products. ", end='')
+        interval.lap()  # ottenuti prodotti
+        logger.debug(f"Received {len(products)} products")
+
         cart = fillCart(products)  # riempi il carrello, ritorna un set di Articles
-        if DEBUG: print(f"Cart dimension = {len(cart)}")
+        interval.lap()  # riempito il carrello
+        logger.info(f"Cart dimension = {len(cart)}")
 
         # genero nuovo ordine
         response = requests.post(
@@ -111,8 +123,9 @@ if __name__ == "__main__":
             headers={"Authorizarion": token, "Content-Type": "application/json"},
             data=json.dumps(set_to_dict(cart))
         )
+        interval.lap()  # creato nuovo ordine
 
-        if DEBUG: print((response.status_code,response.text) if response.status_code==201 else response.status_code)
+        logger.info((response.status_code,response.text) if response.status_code==201 else response.status_code)
         orderInfo = json.loads(response.text)
 
         response = requests.post(
@@ -120,7 +133,11 @@ if __name__ == "__main__":
             headers={"Authorizarion": token, "Content-Type": "application/json"},
             data=json.dumps({"orderID":orderInfo['orderID']})
         )
-        if DEBUG: print((response.status_code,response.text) if response.status_code==201 else response.status_code)
+        interval.lap()  # completato pagamento
+        logger.info((response.status_code,response.text) if response.status_code==201 else response.status_code)
 
-        print("Order shipped")
+        logger.critical(f"Order {orderInfo['orderID']} shipped")
+
+        interval.save()
+        interval.reset()
 

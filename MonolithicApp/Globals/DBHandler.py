@@ -1,6 +1,8 @@
 import json
 import psycopg2
-from
+import logging
+
+logging.basicConfig(level=logging.CRITICAL, format="%(asctime)s - %(levelname)s - %(message)s")
 
 
 class DBHandler:
@@ -9,7 +11,7 @@ class DBHandler:
         self._connection = self._connect()
         self._cursor = self._connection.cursor()
 
-    def __del__(self): # distruttore
+    def __del__(self):  # distruttore
         self._cursor.close()
         self._connection.close()
 
@@ -21,11 +23,11 @@ class DBHandler:
             password="postgres",
             port=5433
         )
-        print("DB connection > ", newConn)
+        logging.debug(f"DB connection > {newConn}")
         return newConn
 
     def select(self, query):
-        print("Eseguo: ", query)
+        logging.debug(f"Eseguo: {query}")
         try:
             self._cursor.execute(query)
             columns = [desc[0] for desc in self._cursor.description]
@@ -35,7 +37,7 @@ class DBHandler:
             raise e
 
     def update(self, query, response=False):
-        print("Eseguo: ", query)
+        logging.debug(f"Eseguo: {query}")
         try:
             self._cursor.execute(query)
             self._connection.commit()
@@ -44,7 +46,7 @@ class DBHandler:
             else:
                 return None
         except psycopg2.Error as e:
-            print("Eseguo rollback")
+            logging.critical("Eseguo rollback")
             self._connection.rollback()
             raise e
 

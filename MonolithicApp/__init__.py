@@ -12,10 +12,9 @@ from MonolithicApp.Authentication.AuthenticationManager import checkToken
 from MonolithicApp.Shippings.ShippingManager import ShippingsManager
 from MonolithicApp.Globals.Enumeratives import Roles
 
-from flask_restful import Api, Resource
-
 app = Flask(__name__)
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+loggingLevel = logging.CRITICAL  # livello di logging valido per tutto il progetto
+logging.basicConfig(level=loggingLevel, format="%(asctime)s - %(levelname)s - %(message)s")
 
 
 @app.route("/productsList", methods=["GET", "POST"])
@@ -31,7 +30,7 @@ def productList():
     logger.info(f"Token = {token}")
     validToken = _isValid_token(token)
     if not validToken[0]:
-        return 401, json.dumps(validToken[1])
+        return json.dumps(validToken[1]), 401
     token = validToken[2]
 
     # richiesta della lista di prodotti
