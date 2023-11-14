@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: customers-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: customers-app
+  template:
+    metadata:
+      labels:
+        app: customers-app
+    spec:
+      containers:
+        - name: customers-cont
+          image: customers:1
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5005
+              protocol: TCP
+ 

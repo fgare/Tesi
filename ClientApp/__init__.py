@@ -6,11 +6,13 @@ import logging
 
 import requests
 import random
-from MonolithicApp.Globals.Customer import Customer
-from MonolithicApp.Globals.Article import Article
-from ClientApp.Stopwatch import Stopwatch
+from Customer import Customer
+from Article import Article
+from Stopwatch import Stopwatch
 
-BASE = "http://127.0.0.1:5000/"
+#BASE = "http://127.0.0.1:5000/"
+BASE = "http://192.168.1.4:5000/"
+ROUNDS = 100  # numedo di interrogazioni successive che verranno eseguite nel main
 MAXITEMS = 100  # Dimensione massima del carrello
 N_OF_ARTICLES = 168  # numero di differenti articoli nel magazzino
 CUSTOMER_MAX_ID = 2932  # Numero di clienti registrati
@@ -94,7 +96,7 @@ def set_to_dict(cart: set) -> list:
 
 
 if __name__ == "__main__":
-    for _ in range(100):
+    for _ in range(ROUNDS):
         interval = Stopwatch(6)
         interval.lap()  # inizio
 

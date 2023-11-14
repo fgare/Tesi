@@ -1,0 +1,238 @@
+# AUTHENTICATION
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: authentication-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: authentication-app
+  template:
+    metadata:
+      labels:
+        app: authentication-app
+    spec:
+      containers:
+        - name: authentication-cont
+          image: authentication:1
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5000
+              protocol: TCP
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: authentication-service
+spec:
+  selector:
+    app: authentication-app
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000
+
+---
+# CUSTOMERS
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: customers-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: customers-app
+  template:
+    metadata:
+      labels:
+        app: customers-app
+    spec:
+      containers:
+        - name: customers-cont
+          image: customers:1
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5005
+              protocol: TCP
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: customers-service
+spec:
+  selector:
+    app: customers-app
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 5005
+      targetPort: 5005
+
+---
+# ORDERS
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orders-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orders-app
+  template:
+    metadata:
+      labels:
+        app: orders-app
+    spec:
+      containers:
+        - name: orders-cont
+          image: orders:1
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5002
+              protocol: TCP
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: orders-service
+spec:
+  selector:
+    app: orders-app
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 5002
+      targetPort: 5002
+
+---
+# PAYMENTS
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payments-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payments-app
+  template:
+    metadata:
+      labels:
+        app: payments-app
+    spec:
+      containers:
+        - name: payments-cont
+          image: payments:1
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5003
+              protocol: TCP
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: payments-service
+spec:
+  selector:
+    app: payments-app
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 5003
+      targetPort: 5003
+
+---
+
+# shippings
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shippings-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shippings-app
+  template:
+    metadata:
+      labels:
+        app: shippings-app
+    spec:
+      containers:
+        - name: shippings-cont
+          image: shippings:1
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5004
+              protocol: TCP
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: shippings-service
+spec:
+  selector:
+    app: shippings-app
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 5004
+      targetPort: 5004
+
+---
+
+# warehouse
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: warehouse-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: warehouse-app
+  template:
+    metadata:
+      labels:
+        app: warehouse-app
+    spec:
+      containers:
+        - name: warehouse-cont
+          image: warehouse:1
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5001
+              protocol: TCP
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: warehouse-service
+spec:
+  selector:
+    app: warehouse-app
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 5001
+      targetPort: 5001

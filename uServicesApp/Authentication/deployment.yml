@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: authentication-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: authentication-app
+  template:
+    metadata:
+      labels:
+        app: authentication-app
+    spec:
+      containers:
+        - name: authentication-cont
+          image: authentication:1
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5000
+              protocol: TCP
+ 

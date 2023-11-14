@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shippings-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shippings-app
+  template:
+    metadata:
+      labels:
+        app: shippings-app
+    spec:
+      containers:
+        - name: shippings-cont
+          image: shippings:1
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5004
+              protocol: TCP
+ 

@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payments-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payments-app
+  template:
+    metadata:
+      labels:
+        app: payments-app
+    spec:
+      containers:
+        - name: payments-cont
+          image: payments:1
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5003
+              protocol: TCP
+ 

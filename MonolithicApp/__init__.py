@@ -3,14 +3,14 @@ from psycopg2 import DatabaseError
 import json
 import logging
 
-from MonolithicApp.Warehouse.WarehouseManager import WarehouseManager
-from MonolithicApp.Orders.OrdersManager import OrdersManager
-from MonolithicApp.Customers.CustomersManager import CustomersManager
-from MonolithicApp.Payments.PaymentsManager import PaymentsManager
-from MonolithicApp.Authentication.AuthenticationManager import AuthenticationManager
-from MonolithicApp.Authentication.AuthenticationManager import checkToken
-from MonolithicApp.Shippings.ShippingManager import ShippingsManager
-from MonolithicApp.Globals.Enumeratives import Roles
+from Warehouse.WarehouseManager import WarehouseManager
+from Orders.OrdersManager import OrdersManager
+from Customers.CustomersManager import CustomersManager
+from Payments.PaymentsManager import PaymentsManager
+from Authentication.AuthenticationManager import AuthenticationManager
+from Authentication.AuthenticationManager import checkToken
+from Shippings.ShippingManager import ShippingsManager
+from Globals.Enumeratives import Roles
 
 app = Flask(__name__)
 loggingLevel = logging.CRITICAL  # livello di logging valido per tutto il progetto
@@ -193,6 +193,5 @@ def _isValid_token(token):
     return False, {"comment": "Invalid token"}, None
 
 
-
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
